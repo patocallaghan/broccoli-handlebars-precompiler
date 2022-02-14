@@ -1,44 +1,38 @@
-const Filter = require('broccoli-filter');
+const Filter = require('broccoli-persistent-filter');
 const Handlebars = require('handlebars');
+const md5 = require('md5');
 
-module.exports = HandlebarsFilters;
+class HandlebarsPrecompilerFilter extends Filter {
+  constructor(inputNode, options = {}) {
+    super(inputNode, {
+      name: 'broccoli-handlebars-precompiler',
+      annotation: options.annotation
+    });
+    this.extensions = options.extensions || ['hbs', 'handlebars'];
+    this.targetExtension = options.targetExtension || ['js'];
 
-HandlebarsFilters.prototype = Object.create(Filter.prototype);
-HandlebarsFilters.prototype.constructor = HandlebarsFilters;
-
-function HandlebarsFilters (tree, options) {
-  if (!(this instanceof HandlebarsFilters)) {
-    return new HandlebarsFilters(tree, options);
+    this.inputOptionsChecksum = md5(options);
+    this.dependencyVersionChecksum = md5(require('./package.json').version);
   }
 
-  if (!('srcDir' in options)) {
-    console.log('HandlebarsFilters: ERROR! No srcDir set.');
-    return tree;
+  processString(content) {
+    try {
+      let precompiled = Handlebars.precompile(content);
+      return `import Handlebars from 'handlebars';
+      const _template = Handlebars.template(${precompiled});
+      export default _template;`;
+    } catch (err) {
+      console.log(err.message);
+    }
   }
 
-  // Set default options
-  this.options = options || {};
-  this.options.extensions = options.extensions || ['hbs', 'handlebars'];
-  this.options.targetExtension = options.targetExtension || ['js'];
-  this.options.srcDir = options.srcDir || null;
+  cacheKey() {
+    return md5(Filter.prototype.call(this) + this.inputOptionsChecksum + this.dependencyVersionChecksum);
+  }
 
-  // Set options necessary for the filter
-  filterOptions = {
-    srcDir: this.options.srcDir,
-    extensions: this.options.extensions,
-    targetExtension: this.options.targetExtension
-  };
-
-  Filter.call(this, tree, filterOptions);
+  cacheKeyProcessString(content) {
+    return md5(content);
+  }
 }
 
-HandlebarsFilters.prototype.processString = function (string, srcFile) {
-  try {
-    let precompiled = Handlebars.precompile(string, this.options);
-    return `import Handlebars from 'handlebars';
-    const _template = Handlebars.template(${precompiled});
-    export default _template;`;
-  } catch (err) {
-    console.log(err.message);
-  }
-};
+module.exports = HandlebarsPrecompilerFilter;
