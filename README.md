@@ -1,69 +1,74 @@
-# Broccoli Handlebars Precompiler
+# Broccoli Handlebars Precompiler ESM
 
-[Broccoli](https://github.com/broccolijs/broccoli) plugin that gives us an easy way to precompile [Handlebars](http://handlebarsjs.com/) templates.
+**Disclaimer:** This repo is a fork of the great [jakkor/broccoli-handlebars-precompiler](https://www.github.com/jakkor/broccoli-handlebars-precompiler). The difference between implementations being that the original focused on only working with global JavaScript variables, whereas this version focuses on working with more modern JavaScript standards, i.e. ECMAScript Modules (ESM).
 
-It opens every handlebar file and creates js file that can be later combine by different tool.
+---
 
-### Install
+A [Broccoli](https://github.com/broccolijs/broccoli) plugin that gives us an easy way to precompile [Handlebars](http://handlebarsjs.com/) templates into [ECMAScript Modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules), aka ESM.
+
+It works by taking each input Handlebars file, precompiles it using [`Handlebars.precompile`](https://handlebarsjs.com/installation/precompilation.html#precompiling-templates-inside-nodejs) and outputs a JS file (by default) that can be later combined by a different tool.
+
+## Install
 ```
-npm install --save broccoli-handlebars-precompiler
+npm install --save broccoli-handlebars-precompiler-esm
+
+yarn add broccoli-handlebars-precompiler-esm
 ```
 
-### Example
+## Usage
 ```js
-var broccoliHandlebars = require('broccoli-handlebars-precompiler');
+const BroccoliHandlebars = require('broccoli-handlebars-precompiler-esm');
 
-var tree = broccoliHandlebars(tree, {
-  srcDir: 'js/templates',
-  namespace: 'App.templates'
+// ...
+let precompiledTemplates = new BroccoliHandlebars(templates, {
+  extensions: ['handlebars'],
 });
 
 ```
 
-### How to use it in javascript application
-
-Sample templates files.
-
-```
-productList.hbs
-products/item.hbs
-
-```
-
-After precompiling with namespace 'App.templates' accessing those is quite easy.
-
-Templates from main folder:
-```javascript
-App.templates.productList({hondaCivic:"Honda Civic for sale", citroenXsara:"Citroen Xsara for sale"});
-```
-
-Templates from subfolders:
-```javascript
-App.templates["products/item"]({name:"Honda Civic", price:"10.000"});
-```
-
-### Usage in Broccoli file
+## API
 
 ```js
-var tree = broccoliHandlebars(tree, options);
+const precompiledTemplates = new BroccoliHandlebars(inputNodes, options);
 ```
-- **tree** - a broccoli tree
-- **options** - options, see below
+
+* `inputNodes`: An array of node objects that this plugin will read from. Nodes are usually other plugin instances; they were formerly known as "trees".
 
 ### Options
+* `annotation` (optional): Same as [broccoli-plugin](https://github.com/broccolijs/broccoli-plugin#new-plugininputnodes-options); see there.
+* `extensions` (optional): Array of handlebars file extensions. Default: `['hbs', 'handlebars']`.
+* `targetExtension` (optional): The file extension of the corresponding output files. Default: `js`.
 
-### srcDir (required)
+## How to use it in JavaScript application
 
-Source directory where handlebars are stored.
+### Input
+`my-handlebars-template.hbs`
+```hbs
+<div class="my-class"></div>
+```
 
-### namespace (optional)
+### Output
+`my-handlebars-template.js`
+```js
+import Handlebars from 'handlebars';
 
-Namespace where all templates will be added. Default is Handlebars.templates.
+const _template = Handlebars.template({
+  "compiler": [8, ">= 4.3.0"],
+  "main": function (container, depth0, helpers, partials, data) {
+    return "<div class=\"my-class\"></div>\n";
+  },
+  "useData": true
+});
 
-### extensions (optional)
+export default _template;
+```
 
-Array of handlebars file extensions. Default is hbs and handlebars.
+### Using the template
+You must have a copy of the Handlebars runtime available in your application. See the [Handlebars docs](https://handlebarsjs.com/installation/#installation) for more information how to install it.
 
-### targetExtension (optional)
+To use in your app you then import the template and invoke it passing any data it needs. See [Handlebars docs](https://handlebarsjs.com/api-reference/compilation.html#handlebars-template-templatespec) for more details.
 
-Array of target extensions. Default is js.
+```js
+import myHandlebarsTemplate from './my-handlebars-template.js';
+myHandlebarsTemplate(data)
+```

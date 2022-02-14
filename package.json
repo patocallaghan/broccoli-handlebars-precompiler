@@ -1,16 +1,16 @@
 {
-  "name": "broccoli-handlebars-precompiler",
-  "description": "Precompiles handlebars templates",
+  "name": "broccoli-handlebars-precompiler-esm",
+  "description": "Precompiles handlebars templates and outputs ECMAScript Modules",
   "version": "0.1.4",
   "author": {
-    "name": "Jakub Korupczynski",
-    "email": "jakub.korupczynski@gmail.com"
+    "name": "Pat O'Callaghan",
+    "email": "patocallaghan@gmail.com"
   },
   "main": "index.js",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jakkor/broccoli-handlebars-precompiler.git"
+    "url": "https://github.com/patocallaghan/broccoli-handlebars-precompiler-esm.git"
   },
   "keywords": [
     "broccoli-plugin",
@@ -18,7 +18,7 @@
     "javascript"
   ],
   "bugs": {
-    "url": "https://github.com/jakkor/broccoli-handlebars-precompiler/issues"
+    "url": "https://github.com/patocallaghan/broccoli-handlebars-precompiler-esm/issues"
   },
   "dependencies": {
     "broccoli-persistent-filter": "^3.1.2",
